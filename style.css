@@ -1,0 +1,10 @@
+body {
+	height: 100vh;
+	display: grid;
+}
+
+#dotCanvas {
+	justify-self: center;
+	align-self: center;
+	border: 5px solid purple;
+}
