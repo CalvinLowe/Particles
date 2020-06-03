@@ -4,38 +4,49 @@ class Particle {
 		this.y = y ?? getRandomInt(0, canvas.height, radius);;
 		this.radius = radius;
 		this.speed = speed;
-		this.dx = speed;
-		this.dy = speed;
+		this.dx = getRandomDirection(speed);
+		this.dy = getRandomDirection(speed);
 	}
 }
 
 window.onload = init();
-setInterval(drawParticle, 100);
+setInterval(drawParticles, 100); // TODO: should be refresh canvas which call drawParticles()?
 
 function init() {
 	initCanvas();
 	initContext();
-	initParticle();
+	initParticles(10);
 }
 
-function initParticle() {
-	window.particle = new Particle(null, null, 10, 10);
-	context.putImageData(context.createImageData(particle.radius, particle.radius), particle.x, particle.y);
-}
+function initParticles(numberOfParticles) {
+	window.particles = [];
 
-function drawParticle() {
-	refreshCanvas();
-	context.putImageData(context.createImageData(particle.radius, particle.radius), particle.x, particle.y);
-
-	// detect collisions with sides
-	if (particle.y + particle.dy < 0 || particle.y + particle.dy > canvas.height - particle.radius) {
-		particle.dy = -particle.dy;
-	} else if (particle.x + particle.dx < 0 || particle.x + particle.dx > canvas.width - particle.radius) {
-		particle.dx = -particle.dx;
+	for (i = 0; i < numberOfParticles; i++) {
+		window.particles[i] = new Particle(null, null, 10, 10);
+		drawParticleImageData(i);
 	}
+}
 
-	particle.x += particle.dx;
-	particle.y += particle.dy;
+function drawParticles() {
+	refreshCanvas();
+
+	for (i = 0; i < window.particles.length; i++) {
+		drawParticleImageData(i);
+
+		// detect collisions with sides
+		if (particles[i].y + particles[i].dy < 0 || particles[i].y + particles[i].dy > canvas.height - particles[i].radius) {
+			particles[i].dy = -particles[i].dy;
+		} else if (particles[i].x + particles[i].dx < 0 || particles[i].x + particles[i].dx > canvas.width - particles[i].radius) {
+			particles[i].dx = -particles[i].dx;
+		}
+
+		particles[i].x += particles[i].dx;
+		particles[i].y += particles[i].dy;
+	}
+}
+
+function drawParticleImageData(id) {
+	context.putImageData(context.createImageData(particles[id].radius, particles[id].radius), particles[id].x, particles[id].y);
 }
 
 function initCanvas() {
@@ -64,6 +75,14 @@ function getRandomInt(min, max, roundedTo) {
 	var randomInt = Math.floor((Math.random() * (max - min)) + min);
 	var remainder = randomInt % roundedTo;
 
-	return randomInt - remainder
+	return randomInt - remainder;
+}
+
+function getRandomDirection(speed) {
+	if (Math.random() >= 0.5) {
+		return (-1 * speed);
+	} else {
+		return speed;
+	}
 }
 //#endregion
