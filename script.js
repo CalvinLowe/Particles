@@ -10,7 +10,7 @@ class Particle {
 }
 
 window.onload = init();
-setInterval(drawParticles, 100); // TODO: should be refresh canvas which call drawParticles()?
+setInterval(refreshCanvas, 100);
 
 function init() {
 	initCanvas();
@@ -28,7 +28,7 @@ function initParticles(numberOfParticles) {
 }
 
 function drawParticles() {
-	refreshCanvas();
+	//refreshCanvas();
 
 	for (i = 0; i < window.particles.length; i++) {
 		drawParticleImageData(i);
@@ -59,6 +59,7 @@ function refreshCanvas() {
 	context.clearRect(0, 0, canvas.width, canvas.height);
 	context.fillStyle = 'black';
 	context.fillRect(0, 0, canvas.width, canvas.height);
+	drawParticles();
 }
 
 function initContext() {
