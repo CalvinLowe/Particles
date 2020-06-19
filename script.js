@@ -1,116 +1,134 @@
-class Particle
+// TODO: Move particle class to other file
+// TODO: init, start, stop, number of particles via app
+
+class Particle // TODO: import this from another place..
 {
-	constructor(x, y, radius, speed)
+	constructor()
 	{
-		this.x = x ?? getRandomInt(0, canvas.width, radius);
-		this.y = y ?? getRandomInt(0, canvas.height, radius);;
-		this.radius = radius;
-		this.speed = speed;
-		this.dx = getRandomDirection(speed);
-		this.dy = getRandomDirection(speed);
+		this.colour = getRandomColour();
+		this.radius = 20;
+		this.dx = 4 * Math.random() - 2; // this is controlling the actual speed
+		this.dy = 4 * Math.random() - 2; // this is controlling speed for some reason?
+		// TODO: create get random velocity
+
+		// Vertices
+		this.VertexA = new Vertex(
+			canvas.width * Math.random(),
+			canvas.height * Math.random())
+		this.VertexB = new Vertex(
+			this.VertexA.x + this.radius,
+			this.VertexA.y
+		);
+		this.VertexC = new Vertex(
+			this.VertexA.x + this.radius,
+			this.VertexA.y + this.radius
+		)
+		this.VertexD = new Vertex(
+			this.VertexA.x,
+			this.VertexA.y + this.radius
+		)
 	}
 
-	// TODO: a constructor with a random
+	Draw()
+	{
+		context.fillStyle = this.colour;
+		context.fillRect(this.VertexA.x, this.VertexA.y, this.radius, this.radius)
+	}
 
-	VertexA() { return [this.x, this.y]; }
+	Update()
+	{
+		this.VertexA.Update(this.dx, this.dy);
+	}
 
-	VertexB() { return [this.x + this.radius, this.y]; }
-
-	VertexC(){ return [this.x + this.radius, this.y + this.radius]; }
-
-	VertexD() {	return [this.x, this.y + this.radius]; }
+	IsVertexWithinBoundingBox(vertex)
+	{
+		return this.VertexA.x <= vertex.x && vertex.x <= this.VertexB.x &&
+			this.VertexD.x <= vertex.x && vertex.x<= this.VertexC.x &&
+			this.VertexA.y <= vertex.y && vertex.y <= this.VertexD.y &&
+			this.VertexB.y <= vertex.y && vertex.y <= this.VertexC.y
+	}
 }
 
-
-window.onload = init();
-setInterval(refreshCanvas, 100);
-
-function init()
+class Vertex
 {
-	initCanvas(100, 100);
-	initContext();
-	initParticles(5);
+	constructor(x, y)
+	{
+		this.x = x;
+		this.y = y;
+	}
+
+	Update(dx, dy)
+	{
+		this.x += dx;
+		this.y += dy;
+	}
+
+	Equals(vertex)
+	{
+		// TODO: if vertex != type of vertex
+		return this.x === vertex.x && this.y === vertex.y;
+	}
 }
 
-function initParticles(numberOfParticles)
+let canvas = document.getElementById('dotCanvas');
+let context = canvas.getContext('2d');
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+let particleList = [];
+let numberOfParticles = 100; // TODO: get from page
+
+for (let i = 0; i < numberOfParticles; i++)
 {
-	window.particleList = [];
+	particleList.push(new Particle())
+}
+
+function loop()
+{
+	context.clearRect(0, 0, canvas.width, canvas.height);
 
 	for (let i = 0; i < numberOfParticles; i++)
 	{
-		window.particleList[i] = new Particle(null, null, 10, 10);
-		drawParticleImageData(i);
-	}
-}
-
-function drawParticles()
-{
-	detectParticleCollisions(particleList);
-
-	for (let i = 0; i < window.particleList.length; i++)
-	{
-		drawParticleImageData(i);
 		detectWallCollision(particleList[i]);
-		updateParticlePosition(particleList[i]);
-	}
-}
+		detectedCollision(i, particleList[i]);
 
-function drawParticleImageData(id)
-{
-	context.putImageData(context.createImageData(particleList[id].radius, particleList[id].radius), particleList[id].x, particleList[id].y);
-}
-
-function detectParticleCollisions(particleList)
-{
-	for (let i = 0; i < particleList.length - 1; i++)
-	{
-		detectVertexCollision(particleList[i], particleList[i + 1]);
+		particleList[i].Update();
+		particleList[i].Draw(context);
 	}
-}
-
-function detectVertexCollision(particleA, particleB)
-{
-	if
-	(
-		(particleA.VertexA()[0] === particleB.VertexC()[0] && particleA.VertexA()[1] === particleB.VertexC()[1]) ||
-		(particleA.VertexB()[0] === particleB.VertexD()[0] && particleA.VertexB()[1] === particleB.VertexD()[1]) ||
-		(particleA.VertexC()[0] === particleB.VertexA()[0] && particleA.VertexC()[1] === particleB.VertexA()[1]) ||
-		(particleA.VertexD()[0] === particleB.VertexB()[0] && particleA.VertexD()[1] === particleB.VertexB()[1])
-	)
-	{
-		reverseXCoord(particleA);
-		reverseYCoord(particleA);
-		reverseXCoord(particleB);
-		reverseYCoord(particleB);
-	}
+	requestAnimationFrame(loop)
 }
 
 function detectWallCollision(particle)
 {
-	if (particle.y + particle.dy < 0 || particle.y + particle.dy > canvas.height - particle.radius)
+	if (particle.VertexA.y + particle.dy < 0 || particle.VertexA.y + particle.dy > canvas.height - particle.radius)
 	{
-		reverseYCoord(particle);
+		particle.dy = -particle.dy;
 	}
-	else if (particle.x + particle.dx < 0 || particle.x + particle.dx > canvas.width - particle.radius)
+	else if (particle.VertexA.x + particle.dx < 0 || particle.VertexA.x + particle.dx > canvas.width - particle.radius)
 	{
-		reverseXCoord(particle);
+		particle.dx = -particle.dx;
 	}
 }
 
-function updateParticlePosition(particle)
+function detectedCollision(index, particle)
 {
-	particle.x += particle.dx;
-	particle.y += particle.dy;
-}
-
-function reverseYCoord(particle)
-{
-	particle.dy = -particle.dy;
-}
-
-function reverseXCoord(particle)
-{
-	particle.dx = -particle.dx;
+	for (let i = 0; i < numberOfParticles; i++)
+	{
+		if (i !== index)
+		{
+			if (particleList[i].IsVertexWithinBoundingBox(particle.VertexA) ||
+				particleList[i].IsVertexWithinBoundingBox(particle.VertexB) ||
+				particleList[i].IsVertexWithinBoundingBox(particle.VertexC) ||
+				particleList[i].IsVertexWithinBoundingBox(particle.VertexD))
+			{
+				particle.dx = -particle.dx;
+				particle.dy = -particle.dy;
+				particleList[i].dx = -particleList[i].dx;
+				particleList[i].dy = -particleList[i].dy;
+				particle.Update();
+				particleList[i].Update();
+			}
+		}
+	}
 }
 
 function randomCollision(particle)
@@ -123,49 +141,18 @@ function randomCollision(particle)
 	}
 }
 
-function initCanvas(width, height)
+function getRandomColour()
 {
-	window.canvas = document.getElementById('dotCanvas');
-	canvas.width = width;
-	canvas.height = height;
-}
+	var r = 0, g = 0, b = 0;
 
-function refreshCanvas()
-{
-	context.clearRect(0, 0, canvas.width, canvas.height);
-	context.fillStyle = 'black';
-	context.fillRect(0, 0, canvas.width, canvas.height);
-	drawParticles();
-}
-
-function initContext()
-{
-	window.context = canvas.getContext('2d');
-	context.fillStyle = 'black';
-	context.fillRect(0, 0, canvas.width, canvas.height);
-}
-
-//#region Utility functions
-function getRandomInt(min, max, roundedTo)
-{
-	min = Math.ceil(min);
-	max = Math.floor(max);
-
-	var randomInt = Math.floor((Math.random() * (max - min)) + min);
-	var remainder = randomInt % roundedTo;
-
-	return randomInt - remainder;
-}
-
-function getRandomDirection(speed)
-{
-	if (Math.random() >= 0.5)
+	while (r < 100 && g < 100 && b < 100)
 	{
-		return (-1 * speed);
+		r = Math.floor(Math.random() * 256);
+		g = Math.floor(Math.random() * 256);
+		b = Math.floor(Math.random() * 256);
 	}
-	else
-	{
-		return speed;
-	}
+
+	return "rgb(" + r + "," + g + "," + b + ")";
 }
-//#endregion
+
+loop();
