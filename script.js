@@ -1,3 +1,4 @@
+'use strict';
 // TODO: Move particle class to other file
 // TODO: init, start, stop, number of particles via app
 
@@ -6,67 +7,24 @@ class Particle // TODO: import this from another place..
 	constructor()
 	{
 		this.colour = getRandomColour();
-		this.radius = 20;
+		this.width = 20;
+		this.height = 20;
+		this.x = canvas.width * Math.random();
+		this.y = canvas.height * Math.random();
 		this.dx = 4 * Math.random() - 2; // this is controlling the actual speed
 		this.dy = 4 * Math.random() - 2; // this is controlling speed for some reason?
-		// TODO: create get random velocity
-
-		// Vertices
-		this.VertexA = new Vertex(
-			canvas.width * Math.random(),
-			canvas.height * Math.random())
-		this.VertexB = new Vertex(
-			this.VertexA.x + this.radius,
-			this.VertexA.y
-		);
-		this.VertexC = new Vertex(
-			this.VertexA.x + this.radius,
-			this.VertexA.y + this.radius
-		)
-		this.VertexD = new Vertex(
-			this.VertexA.x,
-			this.VertexA.y + this.radius
-		)
 	}
 
 	Draw()
 	{
 		context.fillStyle = this.colour;
-		context.fillRect(this.VertexA.x, this.VertexA.y, this.radius, this.radius)
+		context.fillRect(this.x, this.y, this.width, this.height)
 	}
 
 	Update()
 	{
-		this.VertexA.Update(this.dx, this.dy);
-	}
-
-	IsVertexWithinBoundingBox(vertex)
-	{
-		return this.VertexA.x <= vertex.x && vertex.x <= this.VertexB.x &&
-			this.VertexD.x <= vertex.x && vertex.x<= this.VertexC.x &&
-			this.VertexA.y <= vertex.y && vertex.y <= this.VertexD.y &&
-			this.VertexB.y <= vertex.y && vertex.y <= this.VertexC.y
-	}
-}
-
-class Vertex
-{
-	constructor(x, y)
-	{
-		this.x = x;
-		this.y = y;
-	}
-
-	Update(dx, dy)
-	{
-		this.x += dx;
-		this.y += dy;
-	}
-
-	Equals(vertex)
-	{
-		// TODO: if vertex != type of vertex
-		return this.x === vertex.x && this.y === vertex.y;
+		this.x += this.dx;
+		this.y += this.dy;
 	}
 }
 
@@ -75,7 +33,7 @@ let context = canvas.getContext('2d');
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 let particleList = [];
-let numberOfParticles = 100; // TODO: get from page
+let numberOfParticles = 500; // TODO: get from page
 
 for (let i = 0; i < numberOfParticles; i++)
 {
@@ -99,11 +57,11 @@ function loop()
 
 function detectWallCollision(particle)
 {
-	if (particle.VertexA.y + particle.dy < 0 || particle.VertexA.y + particle.dy > canvas.height - particle.radius)
+	if (particle.y + particle.dy < 0 || particle.y + particle.dy > canvas.height - particle.height)
 	{
 		particle.dy = -particle.dy;
 	}
-	else if (particle.VertexA.x + particle.dx < 0 || particle.VertexA.x + particle.dx > canvas.width - particle.radius)
+	else if (particle.x + particle.dx < 0 || particle.x + particle.dx > canvas.width - particle.height)
 	{
 		particle.dx = -particle.dx;
 	}
@@ -115,29 +73,18 @@ function detectedCollision(index, particle)
 	{
 		if (i !== index)
 		{
-			if (particleList[i].IsVertexWithinBoundingBox(particle.VertexA) ||
-				particleList[i].IsVertexWithinBoundingBox(particle.VertexB) ||
-				particleList[i].IsVertexWithinBoundingBox(particle.VertexC) ||
-				particleList[i].IsVertexWithinBoundingBox(particle.VertexD))
+			if 
+			(particle.x < particleList[i].x + particleList[i].width &&
+				particle.x + particle.width > particleList[i].x &&
+				particle.y < particleList[i].y + particleList[i].height &&
+				particle.y + particle.height > particleList[i].y)
 			{
 				particle.dx = -particle.dx;
 				particle.dy = -particle.dy;
 				particleList[i].dx = -particleList[i].dx;
 				particleList[i].dy = -particleList[i].dy;
-				particle.Update();
-				particleList[i].Update();
 			}
 		}
-	}
-}
-
-function randomCollision(particle)
-{
-	if (Math.random() >= 0.5) {
-		particle.dx = -particle.dx;
-	}
-	if (Math.random() >= 0.5) {
-		particle.dy = -particle.dy;
 	}
 }
 
