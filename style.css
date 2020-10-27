@@ -1,9 +1,16 @@
 body {
-    margin:0;
-    padding:0;
-    background:#000;
+    background:#20D5FE;
 }
 
-#dotCanvas {
+.main-grid {
+    /* display: grid;
+    grid-template-columns: minmax(50%, 1fr) auto;
+    grid-gap: 1rem; */
+}   
+
+#canvas {
     display: block;
+    max-width: 100%;
+    border: 1px solid black;
+    background-color: black;
 }
